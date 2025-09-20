@@ -1,0 +1,6 @@
+[submodule "Azer/vendor/glfw"]
+	path = Azer/vendor/glfw
+	url = https://github.com/glfw/glfw.git
+[submodule "Azer/vendor/spdlog"]
+	path = Azer/vendor/spdlog
+	url = https://github.com/gabime/spdlog.git
