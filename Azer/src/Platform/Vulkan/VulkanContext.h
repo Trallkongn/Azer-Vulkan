@@ -17,21 +17,8 @@ namespace Azer {
         {{0.0f,0.5f},{0.0f,0.0f,1.0f}}
     };
 
-	class VulkanContext : public GraphicsContext
-	{
-	public:
-        VulkanContext(GLFWwindow* windowHandle);
-
-        void Init() override;
-        void SwapBuffers() override;
-	private:
-        GLFWwindow* m_WindowHandle;
-
-        struct VulkanData
-        {
-
-        };
-
+    struct VulkanData
+    {
         VkInstance instance;
         VkSurfaceKHR surface;
         VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
@@ -51,9 +38,21 @@ namespace Azer {
         std::vector<VkCommandBuffer> commandBuffers;
         VkSemaphore imageAvailableSemaphore;
         VkSemaphore renderFinishedSemaphore;
+    };
 
+	class VulkanContext : public GraphicsContext
+	{
+	public:
+        VulkanContext(GLFWwindow* windowHandle);
 
-        // Vulkan buffers
+        void Init() override;
+        void SwapBuffers() override;
+
+        static VulkanData& GetVulkanData() { return *s_VulkanData; }
+	private:
+        GLFWwindow* m_WindowHandle;
+        static VulkanData* s_VulkanData;
+        // Temp Vulkan buffers
         VkBuffer m_VertexBuffer;
         VkDeviceMemory m_VertexBufferMemory;
 
