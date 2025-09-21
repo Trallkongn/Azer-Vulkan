@@ -1,6 +1,8 @@
 #include "azpch.h"
 #include "WindowsWindow.h"
 
+#include "Azer/Renderer/RendererAPI.h"
+
 #include "Azer/Events/ApplicationEvent.h"
 #include "Azer/Events/KeyEvent.h"
 #include "Azer/Events/MouseEvent.h"
@@ -32,6 +34,7 @@ namespace Azer {
 	void WindowsWindow::OnUpdate()
 	{
 		glfwPollEvents();
+		m_Context->SwapBuffers();
 	}
 
 	void WindowsWindow::SetVSync(bool enable)
@@ -64,20 +67,24 @@ namespace Azer {
 			glfwSetErrorCallback(GLFWErrorCallback);
 		}
 
-		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+		if(RendererAPI::GetAPI() == RendererAPI::API::Vulkan)
+			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
 		m_Window = glfwCreateWindow(
 			(int)m_Data.Width, 
 			(int)m_Data.Height, 
 			m_Data.Title.c_str(), 
-			nullptr, 
+			nullptr,
 			nullptr
 		);
 
 		s_GLFWWindowCount++;
 
+		// Azer make Windows Context API
+		m_Context = GraphicsContext::Create(m_Window);
+		m_Context->Init();
+
 		glfwSetWindowUserPointer(m_Window, &m_Data);
-		SetVSync(true);
 
 		// Set GLFW callbacks
 		glfwSetWindowSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)

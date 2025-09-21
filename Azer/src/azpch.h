@@ -14,6 +14,7 @@
 #include <unordered_set>
 
 #include "Azer/Core/Log.h"
+#include "Azer/Core/TimeStep.h"
 
 #ifdef AZ_PLATFORM_WINDOWS
 #include <Windows.h>

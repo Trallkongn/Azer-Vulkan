@@ -10,9 +10,10 @@ namespace Azer {
 
 	void Log::Init()
 	{
-		spdlog::set_pattern("%^[%T] %n: %v%$");
+		//spdlog::set_pattern("%^[%T] %n: %v%$");
 
 		auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+		console_sink->set_pattern("%^[%T] %n: %v%$");
 
 		s_CoreLogger = std::make_shared<spdlog::logger>(
 			"Azer", spdlog::sinks_init_list{ console_sink });

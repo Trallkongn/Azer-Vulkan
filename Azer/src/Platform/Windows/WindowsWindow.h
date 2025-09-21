@@ -2,6 +2,7 @@
 
 #include <GLFW/glfw3.h>
 #include "Azer/Core/Window.h"
+#include "Azer/Renderer/GraphicsContext.h"
 
 namespace Azer {
 
@@ -28,6 +29,7 @@ namespace Azer {
 		virtual void Shutdown();
 	private:
 		GLFWwindow* m_Window;
+		Scope<GraphicsContext> m_Context;
 
 		struct WindowData
 		{

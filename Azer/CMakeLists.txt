@@ -16,6 +16,23 @@ add_library(${PROJECT_NAME} STATIC
     "src/Azer/Core/Log.cpp"
     "src/Platform/Windows/WindowsWindow.h"
     "src/Platform/Windows/WindowsWindow.cpp"
+    "src/Azer/Core/TimeStep.h" 
+    "src/Azer/Core/Layer.h" 
+    "src/Azer/Core/Layer.cpp" 
+    "src/Azer/Core/LayerStack.h" 
+    "src/Azer/Core/LayerStack.cpp" 
+    "src/Azer/Renderer/RendererAPI.h" 
+    "src/Azer/Renderer/RendererAPI.cpp" 
+    "src/Azer/Renderer/Renderer.h" 
+    "src/Azer/Renderer/Renderer.cpp"
+    "src/Platform/Vulkan/VulkanTools.h" 
+    "src/Platform/Vulkan/VulkanTools.cpp"
+    "src/Platform/Vulkan/VulkanContext.h" 
+    "src/Platform/Vulkan/VulkanContext.cpp" 
+    "src/Azer/Renderer/GraphicsContext.h" 
+    "src/Azer/Renderer/GraphicsContext.cpp" 
+    "src/Azer/Renderer/RenderCommand.h"
+    "src/Azer/Renderer/RenderCommand.cpp"
 )
 
 add_subdirectory(vendor/glfw)
@@ -34,4 +51,4 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-target_link_libraries(${PROJECT_NAME} PRIVATE glfw Vulkan::Vulkan spdlog::spdlog)
+target_link_libraries(${PROJECT_NAME} PRIVATE glfw Vulkan::Vulkan spdlog::spdlog glm::glm)
