@@ -5,8 +5,6 @@ namespace Azer {
 	class VulkanTools
 	{
 	public:
-
-	private:
-
+		
 	};
 }

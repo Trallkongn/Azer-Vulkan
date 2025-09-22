@@ -1,27 +1,9 @@
 #define GLFW_INCLUDE_VULKAN
 #include "azpch.h"
 #include "VulkanContext.h"
-#include <fstream>
-#include <filesystem>
 #include <set>
-#include <stdexcept>
 
 namespace Azer {
-
-	static std::vector<char> readFile(const std::string& filename)
-	{
-		std::ifstream file(filename, std::ios::ate | std::ios::binary);
-		if (!file.is_open()) {
-			std::cerr << "Current Path: " << std::filesystem::current_path() << std::endl;
-			throw std::runtime_error("Failed to open file: " + filename);
-		}
-		size_t fileSize = (size_t)file.tellg();
-		std::vector<char> buffer(fileSize);
-		file.seekg(0);
-		file.read(buffer.data(), fileSize);
-		file.close();
-		return buffer;
-	}
 
 	VulkanData* VulkanContext::s_VulkanData = nullptr;
 
@@ -319,157 +301,9 @@ namespace Azer {
 		}
 	}
 
-	static VkVertexInputBindingDescription getBindingDescription() {
-		VkVertexInputBindingDescription bindingDescription{};
-		bindingDescription.binding = 0;                  // ���㻺�����󶨺�
-		bindingDescription.stride = sizeof(Vertex);      // ÿ��������ֽڴ�С
-		bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX; // ÿ������ʹ��һ��
-		return bindingDescription;
-	}
-
-	static std::array<VkVertexInputAttributeDescription, 2> getAttributeDescriptions()
-	{
-		std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions{};
-
-		// pos -> location = 0
-		attributeDescriptions[0].binding = 0;
-		attributeDescriptions[0].location = 0;
-		attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT; // vec2
-		attributeDescriptions[0].offset = offsetof(Vertex, pos);
-
-		// color -> location = 1
-		attributeDescriptions[1].binding = 0;
-		attributeDescriptions[1].location = 1;
-		attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT; // vec3
-		attributeDescriptions[1].offset = offsetof(Vertex, color);
-
-		return attributeDescriptions;
-	}
-
 	void VulkanContext::CreateGraphicsPipeline()
 	{
-		auto vertShaderCode = readFile("vert.spv");
-		auto fragShaderCode = readFile("frag.spv");
-
-		VkShaderModuleCreateInfo vertCreateInfo{};
-		vertCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-		vertCreateInfo.codeSize = vertShaderCode.size();
-		vertCreateInfo.pCode = reinterpret_cast<const uint32_t*>(vertShaderCode.data());
-
-		VkShaderModule vertShaderModule;
-		if (vkCreateShaderModule(s_VulkanData->device, &vertCreateInfo, nullptr, &vertShaderModule) != VK_SUCCESS)
-			throw std::runtime_error("Failed to create vertex shader module!");
-
-		VkShaderModuleCreateInfo fragCreateInfo{};
-		fragCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-		fragCreateInfo.codeSize = fragShaderCode.size();
-		fragCreateInfo.pCode = reinterpret_cast<const uint32_t*>(fragShaderCode.data());
-
-		VkShaderModule fragShaderModule;
-		if (vkCreateShaderModule(s_VulkanData->device, &fragCreateInfo, nullptr, &fragShaderModule) != VK_SUCCESS)
-			throw std::runtime_error("Failed to create fragment shader module!");
-
-		VkPipelineShaderStageCreateInfo vertStageInfo{};
-		vertStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-		vertStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-		vertStageInfo.module = vertShaderModule;
-		vertStageInfo.pName = "main";
-
-		VkPipelineShaderStageCreateInfo fragStageInfo{};
-		fragStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-		fragStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-		fragStageInfo.module = fragShaderModule;
-		fragStageInfo.pName = "main";
-
-		VkPipelineShaderStageCreateInfo shaderStages[] = { vertStageInfo, fragStageInfo };
-
-		// Vertex Input (Bind no buffer)
-		VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
-		vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-		vertexInputInfo.vertexBindingDescriptionCount = 1;
-
-		VkVertexInputBindingDescription bd = getBindingDescription();
-		vertexInputInfo.pVertexBindingDescriptions = &bd;
-		vertexInputInfo.vertexAttributeDescriptionCount = 2;
-		VkVertexInputAttributeDescription* ad = getAttributeDescriptions().data();
-		vertexInputInfo.pVertexAttributeDescriptions = ad;
-
-		VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
-		inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-		inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-		inputAssembly.primitiveRestartEnable = VK_FALSE;
-
-		VkViewport viewport{};
-		viewport.x = 0.0f;
-		viewport.y = 0.0f;
-		viewport.width = (float)s_VulkanData->swapChainExtent.width;
-		viewport.height = (float)s_VulkanData->swapChainExtent.height;
-		viewport.minDepth = 0.0f;
-		viewport.maxDepth = 1.0f;
-
-		VkRect2D scissor{};
-		scissor.offset = { 0,0 };
-		scissor.extent = s_VulkanData->swapChainExtent;
-
-		VkPipelineViewportStateCreateInfo viewportState{};
-		viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-		viewportState.viewportCount = 1;
-		viewportState.pViewports = &viewport;
-		viewportState.scissorCount = 1;
-		viewportState.pScissors = &scissor;
-
-		VkPipelineRasterizationStateCreateInfo rasterizer{};
-		rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-		rasterizer.depthClampEnable = VK_FALSE;
-		rasterizer.rasterizerDiscardEnable = VK_FALSE;
-		rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
-		rasterizer.lineWidth = 1.0f;
-		rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
-		rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
-		rasterizer.depthBiasClamp = VK_FALSE;
-
-		VkPipelineMultisampleStateCreateInfo multisampling{};
-		multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-		multisampling.sampleShadingEnable = VK_FALSE;
-		multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-
-		VkPipelineColorBlendAttachmentState colorBlendAttachment{};
-		colorBlendAttachment.colorWriteMask =
-			VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-			VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-		colorBlendAttachment.blendEnable = VK_FALSE;
-
-		VkPipelineColorBlendStateCreateInfo colorBlending{};
-		colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-		colorBlending.logicOpEnable = VK_FALSE;
-		colorBlending.attachmentCount = 1;
-		colorBlending.pAttachments = &colorBlendAttachment;
-
-		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-
-		if (vkCreatePipelineLayout(s_VulkanData->device, &pipelineLayoutInfo, nullptr, &s_VulkanData->pipelineLayout) != VK_SUCCESS)
-			throw std::runtime_error("Failed to create pipeline layout!");
-
-		VkGraphicsPipelineCreateInfo pipelineInfo{};
-		pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-		pipelineInfo.stageCount = 2;
-		pipelineInfo.pStages = shaderStages;
-		pipelineInfo.pVertexInputState = &vertexInputInfo;
-		pipelineInfo.pInputAssemblyState = &inputAssembly;
-		pipelineInfo.pViewportState = &viewportState;
-		pipelineInfo.pRasterizationState = &rasterizer;
-		pipelineInfo.pMultisampleState = &multisampling;
-		pipelineInfo.pColorBlendState = &colorBlending;
-		pipelineInfo.layout = s_VulkanData->pipelineLayout;
-		pipelineInfo.renderPass = s_VulkanData->renderPass;
-		pipelineInfo.subpass = 0;
-
-		if (vkCreateGraphicsPipelines(s_VulkanData->device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &s_VulkanData->graphicsPipeline) != VK_SUCCESS)
-			throw std::runtime_error("Failed to create graphic pipeline!");
-
-		vkDestroyShaderModule(s_VulkanData->device, vertShaderModule, nullptr);
-		vkDestroyShaderModule(s_VulkanData->device, fragShaderModule, nullptr);
+		m_GraphicPipeline = CreateScope<VulkanPipeline>(GetVulkanData());
 	}
 
 	void VulkanContext::CreateVertexBuffer()
@@ -553,7 +387,7 @@ namespace Azer {
 			renderPassInfo.pClearValues = &clearColor;
 
 			vkCmdBeginRenderPass(s_VulkanData->commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-			vkCmdBindPipeline(s_VulkanData->commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, s_VulkanData->graphicsPipeline);
+			vkCmdBindPipeline(s_VulkanData->commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_GraphicPipeline->GetPipeline());
 
 			VkDeviceSize offsets[] = { 0 };
 			vkCmdBindVertexBuffers(s_VulkanData->commandBuffers[i], 0, 1, &m_VertexBuffer, offsets);
@@ -586,8 +420,8 @@ namespace Azer {
 			vkDestroyFramebuffer(s_VulkanData->device, framebuffer, nullptr);
 		for (auto& imageView : s_VulkanData->swapChainImageViews)
 			vkDestroyImageView(s_VulkanData->device, imageView, nullptr);
-		vkDestroyPipeline(s_VulkanData->device, s_VulkanData->graphicsPipeline, nullptr);
-		vkDestroyPipelineLayout(s_VulkanData->device, s_VulkanData->pipelineLayout, nullptr);
+		vkDestroyPipeline(s_VulkanData->device, m_GraphicPipeline->GetPipeline(), nullptr);
+		vkDestroyPipelineLayout(s_VulkanData->device, m_GraphicPipeline->GetPipelineLayout(), nullptr);
 		vkDestroyRenderPass(s_VulkanData->device, s_VulkanData->renderPass, nullptr);
 		vkDestroyCommandPool(s_VulkanData->device, s_VulkanData->commandPool, nullptr);
 

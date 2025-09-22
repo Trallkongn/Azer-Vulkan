@@ -33,6 +33,15 @@ add_library(${PROJECT_NAME} STATIC
     "src/Azer/Renderer/GraphicsContext.cpp" 
     "src/Azer/Renderer/RenderCommand.h"
     "src/Azer/Renderer/RenderCommand.cpp"
+    "src/Azer/Renderer/Buffer.h"
+    "src/Azer/Renderer/Buffer.cpp"
+    "src/Platform/Vulkan/VulkanBuffer.h"
+    "src/Platform/Vulkan/VulkanBuffer.cpp"
+    "src/Azer/Mesh/Vertex.h"
+    "src/Platform/Vulkan/VulkanVertex.h"
+    "src/Platform/Vulkan/VulkanVertex.cpp"
+    "Src/Platform/Vulkan/VulkanPipeline.h"
+    "Src/Platform/Vulkan/VulkanPipeline.cpp"
 )
 
 add_subdirectory(vendor/glfw)

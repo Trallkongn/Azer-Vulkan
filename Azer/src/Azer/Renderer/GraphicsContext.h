@@ -1,4 +1,5 @@
 #pragma once
+#include "Azer/Core/Core.h"
 
 namespace Azer {
 

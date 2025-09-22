@@ -2,44 +2,17 @@
 #include <vulkan/vulkan.h>
 
 #include "Azer/Renderer/GraphicsContext.h"
+#include "VulkanData.h"
+#include "VulkanVertex.h"
+#include "VulkanPipeline.h"
 
 namespace Azer {
 
-    struct Vertex
-    {
-        float pos[2];
-        float color[3];
-    };
-
-    const std::vector<Vertex> vertices = {
+    const std::vector<Vertex2D> vertices = {
         {{-0.5f,-0.5f},{1.0f,0.0f,0.0f}},
         {{0.5f,-0.5f},{0.0f,1.0f,0.0f}},
         {{0.0f,0.5f},{0.0f,0.0f,1.0f}}
     };
-
-    struct VulkanData
-    {
-        VkInstance instance;
-        VkSurfaceKHR surface;
-        VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
-        VkDevice device;
-        VkQueue graphicsQueue;
-        VkQueue presentQueue;
-        VkSwapchainKHR swapChain;
-        std::vector<VkImage> swapChainImages;
-        VkFormat swapChainImageFormat;
-        VkExtent2D swapChainExtent;
-        std::vector<VkImageView> swapChainImageViews;
-        VkRenderPass renderPass;
-        VkPipelineLayout pipelineLayout;
-        VkPipeline graphicsPipeline;
-        std::vector<VkFramebuffer> swapChainFramebuffers;
-        VkCommandPool commandPool;
-        std::vector<VkCommandBuffer> commandBuffers;
-        VkSemaphore imageAvailableSemaphore;
-        VkSemaphore renderFinishedSemaphore;
-    };
-
 	class VulkanContext : public GraphicsContext
 	{
 	public:
@@ -55,6 +28,9 @@ namespace Azer {
         // Temp Vulkan buffers
         VkBuffer m_VertexBuffer;
         VkDeviceMemory m_VertexBufferMemory;
+
+        // temp
+        Ref<VulkanPipeline> m_GraphicPipeline;
 
         void DrawFrame();
 
